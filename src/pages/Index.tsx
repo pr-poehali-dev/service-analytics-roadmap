@@ -1,4 +1,5 @@
 import Icon from "@/components/ui/icon";
+import { useState } from "react";
 
 const meetings = [
   {
@@ -120,55 +121,63 @@ const meetings = [
   },
 ];
 
-const typeStyle: Record<string, { bg: string; border: string; text: string; icon: string }> = {
+const typeConfig: Record<string, { bg: string; iconBg: string; text: string; icon: string; accent: string }> = {
   requirement: {
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    text: "text-blue-800",
+    bg: "bg-[#EEF4FF]",
+    iconBg: "bg-[#3B82F6]",
+    text: "text-[#1E40AF]",
+    accent: "#3B82F6",
     icon: "Sparkles",
   },
   decision: {
-    bg: "bg-emerald-50",
-    border: "border-emerald-200",
-    text: "text-emerald-800",
+    bg: "bg-[#ECFDF5]",
+    iconBg: "bg-[#10B981]",
+    text: "text-[#065F46]",
+    accent: "#10B981",
     icon: "CheckCircle",
   },
   cancelled: {
-    bg: "bg-red-50",
-    border: "border-red-200",
-    text: "text-red-800",
+    bg: "bg-[#FEF2F2]",
+    iconBg: "bg-[#EF4444]",
+    text: "text-[#991B1B]",
+    accent: "#EF4444",
     icon: "XCircle",
   },
   limit: {
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    text: "text-amber-800",
+    bg: "bg-[#FFFBEB]",
+    iconBg: "bg-[#F59E0B]",
+    text: "text-[#92400E]",
+    accent: "#F59E0B",
     icon: "AlertTriangle",
   },
   risk: {
-    bg: "bg-violet-50",
-    border: "border-violet-200",
-    text: "text-violet-800",
+    bg: "bg-[#F5F3FF]",
+    iconBg: "bg-[#8B5CF6]",
+    text: "text-[#5B21B6]",
+    accent: "#8B5CF6",
     icon: "ShieldAlert",
   },
 };
 
-const statusConfig: Record<string, { dot: string; pill: string; label: string; icon: string }> = {
+const statusConfig: Record<string, { color: string; bg: string; label: string; icon: string; border: string }> = {
   revised: {
-    dot: "bg-amber-400 ring-amber-100",
-    pill: "bg-amber-50 text-amber-700 border-amber-200",
+    color: "text-amber-600",
+    bg: "bg-amber-500",
+    border: "border-amber-300",
     label: "Пересмотрено",
     icon: "RefreshCw",
   },
   cancelled: {
-    dot: "bg-red-500 ring-red-100",
-    pill: "bg-red-50 text-red-700 border-red-200",
+    color: "text-red-600",
+    bg: "bg-red-500",
+    border: "border-red-300",
     label: "Отказ от решения",
     icon: "XCircle",
   },
   blocked: {
-    dot: "bg-slate-300 ring-slate-100",
-    pill: "bg-slate-50 text-slate-500 border-slate-200",
+    color: "text-slate-500",
+    bg: "bg-slate-400",
+    border: "border-slate-300",
     label: "Не рассмотрено",
     icon: "Clock",
   },
@@ -182,35 +191,65 @@ const legend = [
   { type: "risk", label: "Риск" },
 ];
 
-export default function Index() {
-  return (
-    <div className="min-h-screen bg-[#FAFAFA] font-golos flex flex-col">
-      <div className="w-full max-w-[1440px] mx-auto px-10 py-8 flex flex-col flex-1">
+const stats = {
+  total: 6,
+  cancelled: 2,
+  risks: 5,
+  pending: 1,
+};
 
-        {/* ── Header ── */}
-        <div className="flex items-start justify-between mb-6">
+function StatCard({ number, label, icon, color }: { number: number; label: string; icon: string; color: string }) {
+  return (
+    <div className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3 shadow-sm border border-slate-100">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white ${color}`}>
+        <Icon name={icon} size={20} />
+      </div>
+      <div>
+        <p className="text-2xl font-extrabold text-slate-800 leading-none">{number}</p>
+        <p className="text-[11px] text-slate-500 font-medium mt-0.5">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+export default function Index() {
+  const [expandedCard, setExpandedCard] = useState<number | null>(null);
+
+  return (
+    <div className="min-h-screen bg-[#F1F5F9] font-golos">
+      <div className="w-full max-w-[1480px] mx-auto px-8 py-6">
+
+        {/* ── Header row ── */}
+        <div className="flex items-end justify-between mb-5">
           <div>
-            <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-slate-400 mb-1">
-              Дорожная карта · Служба
-            </p>
-            <h1 className="text-[28px] font-bold text-slate-900 tracking-tight leading-none">
-              Аналитика «Служб»
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
+                <Icon name="Route" size={16} className="text-white" />
+              </div>
+              <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-slate-400">
+                Дорожная карта
+              </p>
+            </div>
+            <h1 className="text-[32px] font-extrabold text-slate-900 tracking-tight leading-tight">
+              Ключевая аналитика — Службы
             </h1>
-            <p className="text-[13px] text-slate-400 mt-1.5">
-              06 марта — 20 марта 2026 &nbsp;·&nbsp; Система планирования персонала
+            <p className="text-sm text-slate-400 mt-0.5">
+              06 — 20 марта 2026 &middot; Система планирования персонала
             </p>
           </div>
 
-          {/* Legend */}
-          <div className="flex items-center gap-2 flex-wrap justify-end mt-1">
+          {/* Legend pills */}
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
             {legend.map((l) => {
-              const s = typeStyle[l.type];
+              const s = typeConfig[l.type];
               return (
                 <div
                   key={l.type}
-                  className={`flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full border ${s.bg} ${s.border} ${s.text}`}
+                  className={`flex items-center gap-1.5 text-[11px] font-semibold pl-1.5 pr-2.5 py-1 rounded-full ${s.bg} ${s.text}`}
                 >
-                  <Icon name={s.icon} size={10} />
+                  <div className={`w-4 h-4 rounded-full flex items-center justify-center ${s.iconBg}`}>
+                    <Icon name={s.icon} size={9} className="text-white" />
+                  </div>
                   {l.label}
                 </div>
               );
@@ -218,70 +257,125 @@ export default function Index() {
           </div>
         </div>
 
-        <div className="h-px bg-slate-200 mb-8" />
+        {/* ── Stats row ── */}
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          <StatCard number={stats.total} label="Встреч проведено" icon="Users" color="bg-blue-500" />
+          <StatCard number={stats.cancelled} label="Отказов от решений" icon="XCircle" color="bg-red-500" />
+          <StatCard number={stats.risks} label="Выявлено рисков" icon="ShieldAlert" color="bg-violet-500" />
+          <StatCard number={stats.pending} label="Ожидает решения" icon="Clock" color="bg-amber-500" />
+        </div>
 
         {/* ── Timeline ── */}
-        <div className="relative flex-1">
+        <div className="relative">
+          {/* Connecting line with gradient */}
+          <div className="absolute z-0" style={{
+            top: "28px",
+            left: "calc(100%/12)",
+            right: "calc(100%/12)",
+            height: "4px",
+            borderRadius: "2px",
+            background: "linear-gradient(to right, #3B82F6, #EF4444, #F59E0B, #8B5CF6, #EF4444, #94A3B8)"
+          }} />
 
-          {/* Horizontal connector line */}
-          <div
-            className="absolute z-0"
-            style={{ top: "20px", left: "calc(100%/12)", right: "calc(100%/12)", height: "1px", background: "linear-gradient(to right, #e2e8f0 0%, #cbd5e1 50%, #e2e8f0 100%)" }}
-          />
-
+          {/* Arrow markers on line between cancelled meetings */}
           <div className="relative z-10 grid grid-cols-6 gap-3">
             {meetings.map((m, idx) => {
               const sc = statusConfig[m.status];
+              const isExpanded = expandedCard === idx;
+
               return (
                 <div key={idx} className="flex flex-col">
 
-                  {/* Dot + date */}
-                  <div className="flex flex-col items-center mb-4">
+                  {/* Date node */}
+                  <div className="flex flex-col items-center mb-3">
                     <div
-                      className={`w-5 h-5 rounded-full ring-4 mb-2 shadow-sm ${sc.dot}`}
-                    />
-                    <span className="text-[11px] font-bold text-slate-500 tracking-wide">
-                      {m.date}
-                    </span>
+                      className={`w-7 h-7 rounded-full border-[3px] border-white shadow-md flex items-center justify-center ${sc.bg}`}
+                    >
+                      <Icon name={sc.icon} size={12} className="text-white" />
+                    </div>
+                    <div className="mt-1.5 bg-white rounded-lg px-2 py-0.5 shadow-sm">
+                      <span className="text-[12px] font-extrabold text-slate-700">{m.date}</span>
+                    </div>
                   </div>
 
                   {/* Card */}
-                  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3 flex flex-col gap-2.5 flex-1">
+                  <div
+                    className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col flex-1 cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => setExpandedCard(isExpanded ? null : idx)}
+                  >
+                    {/* Card header with colored top stripe */}
+                    <div
+                      className="h-1.5"
+                      style={{
+                        background: m.status === "cancelled"
+                          ? "#EF4444"
+                          : m.status === "revised"
+                            ? "#F59E0B"
+                            : "#94A3B8",
+                      }}
+                    />
 
-                    {/* Meeting title + status pill */}
-                    <div>
-                      <p className="text-[12px] font-bold text-slate-800 leading-snug mb-1.5">
-                        {m.title}
-                      </p>
-                      <span
-                        className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${sc.pill}`}
-                      >
-                        <Icon name={sc.icon} size={9} />
-                        {sc.label}
-                      </span>
-                    </div>
+                    <div className="p-3 flex flex-col gap-2 flex-1">
+                      <div>
+                        <p className="text-[13px] font-bold text-slate-800 leading-snug">
+                          {m.title}
+                        </p>
+                        <div className={`inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold ${sc.color}`}>
+                          <Icon name={sc.icon} size={11} />
+                          {sc.label}
+                        </div>
+                      </div>
 
-                    {/* Content blocks */}
-                    <div className="flex flex-col gap-1.5">
-                      {m.content.map((item, i) => {
-                        const s = typeStyle[item.type];
-                        return (
-                          <div
-                            key={i}
-                            className={`rounded-xl border px-2.5 py-2 ${s.bg} ${s.border}`}
-                          >
-                            <div className={`flex items-center gap-1 mb-1 ${s.text}`}>
-                              <Icon name={s.icon} size={10} />
-                              <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">
-                                {item.label}
-                              </span>
+                      {/* Tags summary */}
+                      <div className="flex flex-wrap gap-1">
+                        {m.content.map((item, i) => {
+                          const tc = typeConfig[item.type];
+                          return (
+                            <div
+                              key={i}
+                              className={`flex items-center gap-1 text-[9px] font-bold pl-0.5 pr-1.5 py-0.5 rounded-full ${tc.bg} ${tc.text}`}
+                            >
+                              <div
+                                className="w-3.5 h-3.5 rounded-full flex items-center justify-center"
+                                style={{ background: tc.accent }}
+                              >
+                                <Icon name={tc.icon} size={7} className="text-white" />
+                              </div>
+                              <span className="truncate max-w-[80px]">{item.label}</span>
                             </div>
-                            <p className={`text-[10px] leading-[1.55] ${s.text} opacity-85`}>
-                              {item.text}
-                            </p>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
+
+                      {/* Expanded detail */}
+                      <div className={`flex flex-col gap-1.5 transition-all duration-300 ${isExpanded ? "max-h-[600px] opacity-100 mt-1" : "max-h-0 opacity-0 overflow-hidden"}`}>
+                        {m.content.map((item, i) => {
+                          const tc = typeConfig[item.type];
+                          return (
+                            <div
+                              key={i}
+                              className={`rounded-xl p-2.5 ${tc.bg}`}
+                              style={{ borderLeft: `3px solid ${tc.accent}` }}
+                            >
+                              <div className={`flex items-center gap-1.5 mb-1 ${tc.text}`}>
+                                <Icon name={tc.icon} size={11} />
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider">
+                                  {item.label}
+                                </span>
+                              </div>
+                              <p className={`text-[10px] leading-relaxed ${tc.text} opacity-80`}>
+                                {item.text}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Expand hint */}
+                      <div className="flex items-center justify-center gap-1 text-[9px] text-slate-400 font-medium mt-auto pt-1">
+                        <Icon name={isExpanded ? "ChevronUp" : "ChevronDown"} size={10} />
+                        {isExpanded ? "Свернуть" : "Подробнее"}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -291,11 +385,12 @@ export default function Index() {
         </div>
 
         {/* ── Footer ── */}
-        <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2">
-          <Icon name="Info" size={12} className="text-slate-400 shrink-0" />
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            <span className="font-semibold text-red-500">Красным</span> — точки отказа или пересмотра ранее принятых решений.&nbsp;
-            Техническая реализация приостановлена до получения финального бизнес-решения.
+        <div className="mt-5 bg-white rounded-2xl border border-slate-100 shadow-sm px-5 py-3 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-red-500 flex items-center justify-center shrink-0">
+            <Icon name="AlertOctagon" size={16} className="text-white" />
+          </div>
+          <p className="text-[12px] text-slate-600 leading-relaxed">
+            <span className="font-bold text-red-600">Техническая реализация приостановлена</span> — за 6 встреч произошло <span className="font-bold">2 полных отказа</span> от решений. Ожидается финальное бизнес-решение для возобновления работ.
           </p>
         </div>
       </div>
